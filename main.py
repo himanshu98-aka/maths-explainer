@@ -15,6 +15,10 @@ st.set_page_config(
     page_title="Personalized Math Explainer (Gemini RAG)",
     layout="centered"
 )
+st.logo(
+    "logo.png",  # Your logo file
+    icon_image="icon.png"  # Smaller icon for main body (optional)
+)
 
 
 # Use st.cache_resource for objects that should be created only once (like the API client)
@@ -164,7 +168,7 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
 # --- Streamlit UI Layout ---
 
 
-st.title("📚 Personalized Math Explainer")
+st.title("🔢 Personalized Math Explainer")
 st.markdown("---")
 
 st.sidebar.header("Try it:")
