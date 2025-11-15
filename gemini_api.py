@@ -12,7 +12,7 @@ API_KEY_1 = os.getenv("GEMINI_API_KEY_1")
 API_KEY_2 = os.getenv("GEMINI_API_KEY_2")
 API_KEYS = [k for k in [API_KEY_1, API_KEY_2] if k]
 
-def generate_with_failover(prompt: str, model_name: str = "gemini-1.5-flash-latest", file_name: str | None = None) -> str:
+def generate_with_failover(prompt: str, model_name: str = "gemini-2.0-flash-lite", file_name: str | None = None) -> str:
     """
     Generate content using a pool of API keys, with automatic failover.
     Optionally accepts a file_name for RAG.
