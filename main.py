@@ -148,14 +148,19 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
 st.title("🔢 Personalized Math Explainer")
 st.markdown("---")
 
+# Calculate user message count early to use in the sidebar
+user_message_count = sum(1 for role, _ in st.session_state.chat_history if role == "user")
+
 st.sidebar.header("Try it:")
 
-# Sidebar for API Key (using a simple placeholder/reminder)
+# Display chat limit and progress
 st.sidebar.markdown(
-    "1. **Use only 5 times:** It's just a prototype on free tier"
+    "**Chat Limit:** This prototype is limited to 5 questions per session."
 )
+st.sidebar.progress(user_message_count / 5, text=f"{user_message_count}/5 Questions Asked")
+
 st.sidebar.markdown(
-    "2. **Upload Syllabus:** Upload your PDF/DOCX/TXT math syllabus below"
+    "**Get Started:** Upload your PDF/DOCX/TXT math syllabus below."
 )
 
 # File Uploader
@@ -225,9 +230,6 @@ if st.sidebar.button("🗑️ Clear Indexed Syllabus & Chat"):
 # Display chat messages from history on app rerun
 for role, text in st.session_state.chat_history:
     st.chat_message(role).markdown(text)
-
-# Accept user input
-user_message_count = sum(1 for role, _ in st.session_state.chat_history if role == "user")
 
 if user_message_count >= 5:
     st.chat_input("You have reached the 5-message limit. Please clear the chat to start over.", disabled=True)
