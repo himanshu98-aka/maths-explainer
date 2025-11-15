@@ -24,9 +24,10 @@ def configure_gemini():
     # Load environment variables from .env file (local)
     load_dotenv()
 
-
     # Try to get API key from environment or Streamlit secrets
-    api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key and "GEMINI_API_KEY" in st.secrets:
+        api_key = st.secrets["GEMINI_API_KEY"]
 
     if not api_key:
         st.error("Error: GEMINI_API_KEY not found. Please configure it in secrets.")
@@ -80,7 +81,6 @@ def upload_syllabus_to_rag(uploaded_file):
         tmp_file.write(uploaded_file.getvalue())
         local_file_path = tmp_file.name
 
-
     try:
         # 2. Upload the file to Gemini
         store_display_name = f"Math_Syllabus_Store_{uuid.uuid4().hex[:6]}"
@@ -88,7 +88,6 @@ def upload_syllabus_to_rag(uploaded_file):
             uploaded_gemini_file = genai.upload_file(path=local_file_path, display_name=uploaded_file.name)
             st.session_state.file_search_store_name = uploaded_gemini_file.name
             st.session_state.file_name = uploaded_file.name
-
 
         # 3. Wait for file processing
         with st.spinner("Step 2/2: Processing file..."):
@@ -104,7 +103,6 @@ def upload_syllabus_to_rag(uploaded_file):
             else:
                 st.error(f"File processing failed with state: {uploaded_gemini_file.state.name}")
                 clean_up_store()
-
 
     except Exception as e:
         st.error(f"An error occurred during upload: {e}")
@@ -139,12 +137,10 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
     else:
         system_instruction = base_system_instruction
 
-
     model = genai.GenerativeModel(
         model_name="gemini-2.0-flash-lite",
         system_instruction=system_instruction
     )
-
 
     # Simple exponential backoff loop for API call
     for i in range(3):
@@ -171,9 +167,7 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
 st.title("📚 Personalized Math Explainer")
 st.markdown("---")
 
-
 st.sidebar.header("Try it:")
-
 
 # Sidebar for API Key (using a simple placeholder/reminder)
 st.sidebar.markdown(
@@ -183,14 +177,12 @@ st.sidebar.markdown(
     "2. **Upload Syllabus:** Upload your PDF/DOCX/TXT math syllabus below"
 )
 
-
 # File Uploader
 uploaded_file = st.sidebar.file_uploader(
     "Upload Syllabus Document (PDF, DOCX, TXT)",
     type=['pdf', 'docx', 'txt'],
     key="file_uploader"
 )
-
 
 # Check for file and process if a new file is uploaded
 if uploaded_file and uploaded_file.name != st.session_state.get('file_name'):
@@ -199,13 +191,11 @@ if uploaded_file and uploaded_file.name != st.session_state.get('file_name'):
     else:
         st.error("Cannot proceed. Please ensure your GEMINI_API_KEY is configured correctly.")
 
-
 # Display Current Status
 if st.session_state.file_search_store_name:
     st.sidebar.success(f"Syllabus: **{st.session_state.file_name}** is READY.")
 else:
     st.sidebar.warning("Please upload your syllabus to begin.")
-
 
 st.sidebar.markdown("---")
 
@@ -249,36 +239,40 @@ if st.sidebar.button("🗑️ Clear Indexed Syllabus & Chat"):
     clean_up_store()
     st.rerun()
 
-
 # --- Main Chat Interface ---
-
 
 # Display chat messages from history on app rerun
 for role, text in st.session_state.chat_history:
     st.chat_message(role).markdown(text)
 
-
 # Accept user input
-if prompt := st.chat_input("Ask a question about your syllabus (e.g., 'Explain the concept of Eigenvalues')"):
-    # Add user message to chat history and display
-    st.session_state.chat_history.append(("user", prompt))
-    st.chat_message("user").markdown(prompt)
+user_message_count = sum(1 for role, _ in st.session_state.chat_history if role == "user")
 
+if user_message_count >= 5:
+    st.chat_input("You have reached the 5-message limit. Please clear the chat to start over.", disabled=True)
+    if "limit_reached_message" not in st.session_state:
+        st.warning("You have reached the 5-message limit for this prototype. Please use the 'Clear Indexed Syllabus & Chat' button in the sidebar to start a new conversation.")
+        st.session_state.limit_reached_message = True
+else:
+    if prompt := st.chat_input("Ask a question about your syllabus (e.g., 'Explain the concept of Eigenvalues')"):
+        # Add user message to chat history and display
+        st.session_state.chat_history.append(("user", prompt))
+        st.chat_message("user").markdown(prompt)
 
-    if not st.session_state.file_search_store_name:
-        st.chat_message("assistant").error("Please upload and index your syllabus first.")
-    else:
-        # Generate the response
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking... Retrieving context from syllabus..."):
-                file_name = st.session_state.file_search_store_name
-                # Pass the full instruction text to the function
-                instruction_texts = [instruction_options[key] for key in selected_instructions]
-                response = generate_rag_response(prompt, file_name, instruction_texts)
-                
-                if response and response.text:
-                    # Display the response text
-                    st.markdown(response.text)
-                    st.session_state.chat_history.append(("assistant", response.text))
-                else:
-                    st.error("Sorry, I couldn't generate a response based on your syllabus.")
+        if not st.session_state.file_search_store_name:
+            st.chat_message("assistant").error("Please upload and index your syllabus first.")
+        else:
+            # Generate the response
+            with st.chat_message("assistant"):
+                with st.spinner("Thinking... Retrieving context from syllabus..."):
+                    file_name = st.session_state.file_search_store_name
+                    # Pass the full instruction text to the function
+                    instruction_texts = [instruction_options[key] for key in selected_instructions]
+                    response = generate_rag_response(prompt, file_name, instruction_texts)
+                    
+                    if response and response.text:
+                        # Display the response text
+                        st.markdown(response.text)
+                        st.session_state.chat_history.append(("assistant", response.text))
+                    else:
+                        st.error("Sorry, I couldn't generate a response based on your syllabus.")
