@@ -135,7 +135,7 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
     # Use the failover function from gemini_api.py
     response_text = generate_with_failover(
         prompt=prompt,
-        model_name="gemini-1.5-flash-latest", # Corrected model name
+        model_name="gemini-2.0-flash-lite", # Corrected model name
         file_name=file_name,
         system_instruction=system_instruction
     )
