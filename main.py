@@ -3,9 +3,8 @@ import os
 import time
 import google.generativeai as genai
 import tempfile
-import uuid
-from dotenv import load_dotenv
-
+import uuid 
+from gemini_api import generate_with_failover, API_KEYS
 
 # --- Configuration and Initialization ---
 
@@ -20,21 +19,16 @@ st.set_page_config(
 # Use st.cache_resource for objects that should be created only once (like the API client)
 @st.cache_resource
 def configure_gemini():
-    """Configures the Gemini client."""
-    # Load environment variables from .env file (local)
-    load_dotenv()
-
-    # Try to get API key from environment or Streamlit secrets
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key and "GEMINI_API_KEY" in st.secrets:
-        api_key = st.secrets["GEMINI_API_KEY"]
-
-    if not api_key:
-        st.error("Error: GEMINI_API_KEY not found. Please configure it in secrets.")
+    """Configures the Gemini client for file operations using the first available key."""
+    # API keys are loaded from gemini_api.py
+    if not API_KEYS:
+        st.error("Error: GEMINI_API_KEYs not found. Please configure them in your .env file.")
         return False
 
     try:
-        genai.configure(api_key=api_key)
+        # Configure genai for file operations with the first key.
+        # Content generation will use the failover logic in gemini_api.py
+        genai.configure(api_key=API_KEYS[0])
         return True
     except Exception as e:
         st.error(f"Error initializing Gemini client: {e}")
@@ -137,28 +131,14 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
     else:
         system_instruction = base_system_instruction
 
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash-lite",
-        system_instruction=system_instruction
-    )
+    # The user's question is the main prompt.
+    # The system instruction is passed separately to the model.
+    # The file context is handled by the API when we pass the file object.
+    full_prompt = f"{system_instruction}\n\nUSER QUESTION:\n{prompt}"
 
-    # Simple exponential backoff loop for API call
-    for i in range(3):
-        try:
-            # Get the file object
-            file = genai.get_file(file_name)
-            
-            response = model.generate_content(
-                [file, prompt]
-            )
-            return response
-        except Exception as e:
-            if i < 2:
-                time.sleep(2 ** i) # Wait 1s, then 2s
-            else:
-                st.error(f"API call failed after multiple retries: {e}")
-                return None
-    return None
+    # Use the failover function from gemini_api.py
+    response_text = generate_with_failover(prompt=full_prompt, model_name="gemini-2.0-flash-lite", file_name=file_name)
+    return response_text
 
 
 # --- Streamlit UI Layout ---
@@ -269,10 +249,10 @@ else:
                     # Pass the full instruction text to the function
                     instruction_texts = [instruction_options[key] for key in selected_instructions]
                     response = generate_rag_response(prompt, file_name, instruction_texts)
-                    
-                    if response and response.text:
+
+                    if response and not response.startswith("ERROR:"):
                         # Display the response text
-                        st.markdown(response.text)
-                        st.session_state.chat_history.append(("assistant", response.text))
+                        st.markdown(response)
+                        st.session_state.chat_history.append(("assistant", response))
                     else:
-                        st.error("Sorry, I couldn't generate a response based on your syllabus.")
+                        st.error(f"Sorry, I couldn't generate a response. The API returned an error: {response}")
