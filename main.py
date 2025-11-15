@@ -3,8 +3,8 @@ import os
 import time
 import google.generativeai as genai
 import tempfile
-import uuid 
-from gemini_api import generate_with_failover, API_KEYS
+import uuid
+from gemini_api import generate_with_failover, get_api_keys
 
 # --- Configuration and Initialization ---
 
@@ -20,15 +20,16 @@ st.set_page_config(
 @st.cache_resource
 def configure_gemini():
     """Configures the Gemini client for file operations using the first available key."""
-    # API keys are loaded from gemini_api.py
-    if not API_KEYS:
-        st.error("Error: GEMINI_API_KEYs not found. Please configure them in your .env file.")
+    # API keys are loaded on-demand from gemini_api.py
+    api_keys = get_api_keys()
+    if not api_keys:
+        st.error("Error: GEMINI_API_KEYs not found. Please configure them in your .env file or Streamlit secrets.")
         return False
 
     try:
         # Configure genai for file operations with the first key.
         # Content generation will use the failover logic in gemini_api.py
-        genai.configure(api_key=API_KEYS[0])
+        genai.configure(api_key=api_keys[0])
         return True
     except Exception as e:
         st.error(f"Error initializing Gemini client: {e}")
@@ -131,13 +132,13 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
     else:
         system_instruction = base_system_instruction
 
-    # The user's question is the main prompt.
-    # The system instruction is passed separately to the model.
-    # The file context is handled by the API when we pass the file object.
-    full_prompt = f"{system_instruction}\n\nUSER QUESTION:\n{prompt}"
-
     # Use the failover function from gemini_api.py
-    response_text = generate_with_failover(prompt=full_prompt, model_name="gemini-2.0-flash-lite", file_name=file_name)
+    response_text = generate_with_failover(
+        prompt=prompt,
+        model_name="gemini-1.5-flash-latest", # Corrected model name
+        file_name=file_name,
+        system_instruction=system_instruction
+    )
     return response_text
 
 
