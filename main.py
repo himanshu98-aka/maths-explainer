@@ -205,9 +205,9 @@ st.sidebar.header("Try it:")
 
 # Display chat limit and progress
 st.sidebar.markdown(
-    "**Chat Limit:** This prototype is limited to 5 questions per session."
+    "**Chat Limit:** This prototype is limited to 3 questions per session."
 )
-st.sidebar.progress(user_message_count / 5, text=f"{user_message_count}/5 Questions Asked")
+st.sidebar.progress(user_message_count / 3, text=f"{user_message_count}/3 Questions Asked")
 
 st.sidebar.markdown(
     "**Get Started:** Upload your PDF/DOCX/TXT math syllabus below."
@@ -292,10 +292,10 @@ if st.sidebar.button("🗑️ Clear Indexed Syllabus & Chat"):
 for role, text in st.session_state.chat_history:
     st.chat_message(role).markdown(text)
 
-if user_message_count >= 5:
-    st.chat_input("You have reached the 5-message limit. Please clear the chat to start over.", disabled=True)
+if user_message_count >= 3:
+    st.chat_input("You have reached the 3-message limit. Please clear the chat to start over.", disabled=True)
     if "limit_reached_message" not in st.session_state:
-        st.warning("You have reached the 5-message limit for this prototype. Please use the 'Clear Indexed Syllabus & Chat' button in the sidebar to start a new conversation.")
+        st.warning("You have reached the 3-message limit for this prototype. Please use the 'Clear Indexed Syllabus & Chat' button in the sidebar to start a new conversation.")
         st.session_state.limit_reached_message = True
 else:
     if prompt := st.chat_input("Ask a question about your syllabus (e.g., 'Explain the concept of Eigenvalues')"):
