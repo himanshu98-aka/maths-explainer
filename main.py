@@ -15,10 +15,6 @@ st.set_page_config(
     page_title="Personalized Math Explainer (Gemini RAG)",
     layout="centered"
 )
-st.logo(
-    "logo.png",  # Your logo file
-    icon_image="icon.png"  # Smaller icon for main body (optional)
-)
 
 
 # Use st.cache_resource for objects that should be created only once (like the API client)
