@@ -12,7 +12,7 @@ from gemini_api import generate_with_failover, get_api_keys
 
 # Use st.set_page_config for better display
 st.set_page_config(
-    page_title="Personalized Math Explainer (Gemini RAG)",
+    page_title="Personalized Math Explainer ",
     layout="centered"
 )
 
@@ -325,7 +325,7 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
     # Use the failover function from gemini_api.py
     response_text = generate_with_failover(
         prompt=prompt,
-        model_name="gemini-2.0-flash-lite", # Use a consistent, modern model
+        model_name="gemini-2.5-flash-lite", # Use a consistent, modern model
         file_name=file_name,
         system_instruction=system_instruction
     )
@@ -335,7 +335,7 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
 # --- Streamlit UI Layout ---
 
 
-st.title("🔢 Personalized Math Explainer")
+st.title(" Personalized Math Explainer")
 st.markdown("---")
 
 # Calculate user message count early to use in the sidebar
