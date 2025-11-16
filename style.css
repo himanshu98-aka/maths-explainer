@@ -1,0 +1,386 @@
+/* Main app background - Dark theme */
+.stApp {
+    background-color: #0f1419;
+    background-image: 
+        radial-gradient(at 47% 33%, hsl(240, 47%, 15%) 0, transparent 59%),
+        radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);
+}
+
+/* Main content area */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background-color: #1a1f2e;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Title styling - Modern gradient */
+h1 {
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    text-align: center;
+    padding: 1rem 0;
+    font-size: 2.5rem !important;
+    letter-spacing: -0.5px;
+}
+
+/* Sidebar background - Dark */
+[data-testid="stSidebar"] {
+    background-color: #0f1419;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    background-color: #0f1419;
+}
+
+/* Sidebar text color */
+[data-testid="stSidebar"] .stMarkdown,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p {
+    color: #e5e7eb !important;
+}
+
+/* Sidebar headers */
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+/* Sidebar success/warning messages */
+[data-testid="stSidebar"] .stSuccess {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 12px;
+    padding: 0.75rem;
+    color: #4ade80 !important;
+}
+
+[data-testid="stSidebar"] .stWarning {
+    background-color: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    padding: 0.75rem;
+    color: #fbbf24 !important;
+}
+
+/* File uploader - Dark theme */
+[data-testid="stFileUploader"] {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px dashed rgba(96, 165, 250, 0.3);
+    transition: all 0.3s ease;
+}
+
+[data-testid="stFileUploader"]:hover {
+    border-color: rgba(96, 165, 250, 0.6);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-testid="stFileUploader"] label {
+    color: #e5e7eb !important;
+    font-weight: 600;
+}
+
+/* Progress bar - Blue gradient */
+.stProgress > div > div > div > div {
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+}
+
+.stProgress > div > div {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Chat messages - Dark cards */
+[data-testid="stChatMessage"] {
+    background-color: #1e293b;
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin: 0.75rem 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* User message - Blue gradient */
+[data-testid="stChatMessage"][data-testid*="user"] {
+    background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 100%);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+[data-testid="stChatMessage"][data-testid*="user"] p {
+    color: #e5e7eb !important;
+}
+
+/* Assistant message - Dark with accent */
+[data-testid="stChatMessage"][data-testid*="assistant"] {
+    background-color: #1e293b;
+    border-left: 3px solid #60a5fa;
+}
+
+[data-testid="stChatMessage"][data-testid*="assistant"] p {
+    color: #e5e7eb !important;
+}
+
+/* Chat input - Modern clean style */
+[data-testid="stChatInput"] {
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #0f172a;
+    padding: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-testid="stChatInput"]:focus-within {
+    border-color: rgba(96, 165, 250, 0.5);
+}
+
+[data-testid="stChatInput"] textarea {
+    border-radius: 24px;
+    background-color: transparent !important;
+    color: #e5e7eb !important;
+    border: none !important;
+    padding: 0.875rem 1.25rem !important;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+[data-testid="stChatInput"] textarea::placeholder {
+    color: #6b7280 !important;
+    opacity: 1;
+    font-weight: 400;
+}
+
+[data-testid="stChatInput"] textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+
+/* Sidebar button - Simple outlined */
+[data-testid="stSidebar"] .stButton > button {
+    background-color: transparent;
+    border: 1.5px solid rgba(96, 165, 250, 0.5);
+    width: 100%;
+    color: #60a5fa;
+}
+
+[data-testid="stSidebar"] .stButton > button:hover {
+    background-color: rgba(96, 165, 250, 0.1);
+    border-color: #60a5fa;
+}
+
+/* Multiselect - Dark theme */
+.stMultiSelect > div > div {
+    background-color: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: #e5e7eb;
+}
+
+.stMultiSelect label {
+    color: #e5e7eb !important;
+}
+
+/* Expander in sidebar */
+[data-testid="stSidebar"] .streamlit-expanderHeader {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    color: #e5e7eb !important;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-testid="stSidebar"] .streamlit-expanderHeader:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-testid="stSidebar"] .streamlit-expanderContent {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 0 0 12px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: none;
+}
+
+/* Success message */
+.stSuccess {
+    background-color: rgba(34, 197, 94, 0.1);
+    border-left: 4px solid #22c55e;
+    border-radius: 12px;
+    padding: 1rem;
+    color: #4ade80;
+}
+
+/* Warning message */
+.stWarning {
+    background-color: rgba(251, 191, 36, 0.1);
+    border-left: 4px solid #fbbf24;
+    border-radius: 12px;
+    padding: 1rem;
+    color: #fcd34d;
+}
+
+/* Error message */
+.stError {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    border-radius: 12px;
+    padding: 1rem;
+    color: #f87171;
+}
+
+/* Spinner */
+.stSpinner > div {
+    border-top-color: #60a5fa !important;
+}
+
+/* Headers in chat messages */
+[data-testid="stChatMessage"] h2 {
+    color: #60a5fa;
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+[data-testid="stChatMessage"] h3 {
+    color: #a78bfa;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+/* Code blocks */
+[data-testid="stChatMessage"] code {
+    background-color: rgba(59, 130, 246, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    color: #60a5fa;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+[data-testid="stChatMessage"] pre {
+    background-color: #0f172a;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    overflow-x: auto;
+}
+
+[data-testid="stChatMessage"] pre code {
+    background-color: transparent;
+    padding: 0;
+    color: #e5e7eb;
+}
+
+/* LaTeX/Math formulas */
+.katex {
+    font-size: 1.1em;
+    color: #e5e7eb;
+}
+
+/* Horizontal divider */
+hr {
+    margin: 2rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.3), transparent);
+}
+
+/* Scrollbar - Dark theme */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f1419;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 10px;
+    border: 2px solid #0f1419;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+}
+
+/* Bullet points in chat */
+[data-testid="stChatMessage"] ul {
+    padding-left: 1.5rem;
+}
+
+[data-testid="stChatMessage"] li {
+    margin: 0.5rem 0;
+    line-height: 1.7;
+    color: #d1d5db;
+}
+
+/* Strong/Bold text */
+[data-testid="stChatMessage"] strong {
+    color: #60a5fa;
+    font-weight: 700;
+}
+
+/* Links */
+a {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+}
+
+/* Card-like stats display */
+[data-testid="stMetric"] {
+    background-color: #1e293b;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Input fields */
+input, textarea, select {
+    background-color: #1e293b !important;
+    color: #e5e7eb !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1) !important;
+}
+
+/* Table styling */
+table {
+    color: #e5e7eb;
+}
+
+thead tr th {
+    background-color: #1e293b !important;
+    color: #60a5fa !important;
+    border-bottom: 2px solid #60a5fa !important;
+}
+
+tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+tbody tr:hover {
+    background-color: rgba(96, 165, 250, 0.05);
+}

@@ -17,6 +17,12 @@ st.set_page_config(
     layout="centered"
 )
 
+def load_css(file_name):
+    """Loads a CSS file and injects it into the Streamlit app."""
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css("style.css")
 
 # Use st.cache_resource for objects that should be created only once (like the API client)
 @st.cache_resource
