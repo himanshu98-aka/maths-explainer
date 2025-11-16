@@ -13,6 +13,7 @@ from gemini_api import generate_with_failover, get_api_keys
 # Use st.set_page_config for better display
 st.set_page_config(
     page_title="Personalized Math Explainer ",
+    page_icon="🎧",
     layout="centered"
 )
 
