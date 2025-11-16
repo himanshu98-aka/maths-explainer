@@ -51,6 +51,8 @@ if "selected_instructions" not in st.session_state:
     st.session_state.selected_instructions = []
 if "extracted_topics" not in st.session_state:
     st.session_state.extracted_topics = None
+if "limit_unlocked" not in st.session_state:
+    st.session_state.limit_unlocked = False
 
 
 # --- Helper Functions ---
@@ -65,6 +67,7 @@ def clean_up_store():
             st.session_state.file_search_store_name = None
             st.session_state.file_name = None
             st.session_state.chat_history = []
+            st.session_state.limit_unlocked = False # Reset cheat code
             st.session_state.extracted_topics = None
             st.success("RAG store cleaned up successfully.")
         except Exception as e:
@@ -118,44 +121,181 @@ def upload_syllabus_to_rag(uploaded_file):
 def extract_topics_from_syllabus(file_name: str):
     """
     Uses Gemini to extract topics and subtopics from the syllabus file and stores them in session state.
+    Enhanced for handwritten notes recognition.
     """
     with st.spinner("Analyzing syllabus to extract topics..."):
         extraction_prompt = """
-        You are a syllabus analysis tool. Your task is to read the provided syllabus document and extract all the main topics (or units) and their corresponding subtopics.
+You are an expert syllabus analyzer specializing in educational document structure. Your task is to carefully read and understand the provided syllabus document (which may be handwritten or typed) and extract its hierarchical structure.
 
-        Present the output in a clean JSON format. The JSON object should have a single key "topics". The value of "topics" should be a list of objects, where each object has two keys: "topic" (the name of the main topic or unit) and "subtopics" (a list of strings representing the subtopics under that main topic).
+IMPORTANT INSTRUCTIONS:
 
-        Do not include any introductory text or explanations outside of the JSON structure. Only return the JSON object.
+1. **Identify Main Topics/Units**: Look for:
+   - Chapter headings (e.g., "Chapter 1", "Unit 1")
+   - Bold or underlined section titles
+   - Major headings with numbers (e.g., "1.", "2.", "I.", "II.")
+   - Broad subject areas (e.g., "Linear Algebra", "Calculus", "Statistics")
+   
+2. **Identify Subtopics**: Look for:
+   - Content listed under main topics
+   - Bullet points or numbered lists
+   - Sub-headings with decimal notation (e.g., "1.1", "1.2")
+   - Specific concepts, theorems, or methods
+   - Topics with smaller text or indentation
+
+3. **What to IGNORE**: 
+   - Page numbers
+   - Random numbers or equations (like "x=23")
+   - Date stamps
+   - Handwritten notes in margins
+   - Instructor names or contact information
+   - Course codes or administrative details
+
+4. **Handling Handwritten Text**:
+   - If text is unclear, make your best interpretation
+   - Focus on recognizable mathematical terms and concepts
+   - Look for structural patterns (indentation, numbering, underlining)
+   - Ignore scribbles or unclear annotations
+
+5. **Output Format**: 
+   Return ONLY a valid JSON object with this exact structure:
+   {
+     "topics": [
+       {
+         "topic": "Name of Main Topic/Unit",
+         "subtopics": [
+           "Subtopic 1",
+           "Subtopic 2",
+           "Subtopic 3"
+         ]
+       }
+     ]
+   }
+
+EXAMPLES OF GOOD EXTRACTION:
+
+From text like:
+"Unit 1: Matrices
+- Types of Matrices
+- Matrix Operations
+- Determinants
+x = 23 (example problem)
+Page 5"
+
+Should extract:
+{
+  "topics": [
+    {
+      "topic": "Matrices",
+      "subtopics": [
+        "Types of Matrices",
+        "Matrix Operations",
+        "Determinants"
+      ]
+    }
+  ]
+}
+
+From text like:
+"Chapter 3 - Probability
+3.1 Basic Probability
+3.2 Conditional Probability  
+3.3 Bayes Theorem"
+
+Should extract:
+{
+  "topics": [
+    {
+      "topic": "Probability",
+      "subtopics": [
+        "Basic Probability",
+        "Conditional Probability",
+        "Bayes Theorem"
+      ]
+    }
+  ]
+}
+
+CRITICAL: 
+- Return ONLY the JSON object
+- No explanatory text before or after
+- Ensure valid JSON formatting
+- Each topic must have at least an empty subtopics array []
+- Focus on educational content, ignore administrative text
         """
         
-        # We don't need a system prompt here, the user prompt is specific enough.
+       
         response = generate_with_failover(
             prompt=extraction_prompt,
-            model_name="gemini-2.0-flash-lite", # Use a capable model for JSON generation
+            model_name="gemini-2.5-flash-lite",  # Better for OCR and handwriting
             file_name=file_name
         )
 
         if response and not response.startswith("ERROR:"):
             try:
                 # Clean the response to ensure it's valid JSON
-                # The model sometimes wraps the JSON in ```json ... ```
-                if response.strip().startswith("```json"):
-                    json_str = response.strip()[7:-3].strip()
-                else:
-                    json_str = response.strip()
+                json_str = response.strip()
                 
+                # Remove markdown code blocks if present
+                if json_str.startswith("```json"):
+                    json_str = json_str[7:]
+                if json_str.startswith("```"):
+                    json_str = json_str[3:]
+                if json_str.endswith("```"):
+                    json_str = json_str[:-3]
+                
+                json_str = json_str.strip()
+                
+                # Parse JSON
                 data = json.loads(json_str)
+                
                 if "topics" in data and isinstance(data["topics"], list):
-                    st.session_state.extracted_topics = data["topics"]
-                    st.sidebar.success("✅ Topics extracted!")
+                    # Validate and clean the extracted data
+                    cleaned_topics = []
+                    for topic_item in data["topics"]:
+                        if isinstance(topic_item, dict) and "topic" in topic_item:
+                            # Clean topic name - remove page numbers, course codes, etc.
+                            topic_name = topic_item["topic"].strip()
+                            
+                            # Skip if it looks like a page number, equation, or administrative text
+                            if (topic_name.lower().startswith("page") or 
+                                topic_name.isdigit() or 
+                                "=" in topic_name or
+                                len(topic_name) < 3):
+                                continue
+                            
+                            # Clean subtopics
+                            subtopics = []
+                            if "subtopics" in topic_item and isinstance(topic_item["subtopics"], list):
+                                for subtopic in topic_item["subtopics"]:
+                                    subtopic_clean = str(subtopic).strip()
+                                    # Filter out invalid subtopics
+                                    if (not subtopic_clean.isdigit() and 
+                                        "=" not in subtopic_clean and
+                                        len(subtopic_clean) >= 3 and
+                                        not subtopic_clean.lower().startswith("page")):
+                                        subtopics.append(subtopic_clean)
+                            
+                            cleaned_topics.append({
+                                "topic": topic_name,
+                                "subtopics": subtopics
+                            })
+                    
+                    if cleaned_topics:
+                        st.session_state.extracted_topics = cleaned_topics
+                        st.sidebar.success(f"✅ Extracted {len(cleaned_topics)} topics!")
+                    else:
+                        st.sidebar.warning("No valid topics found in the document.")
+                        st.session_state.extracted_topics = None
                 else:
                     st.sidebar.warning("Could not find topics in the expected format.")
                     st.session_state.extracted_topics = None
-            except json.JSONDecodeError:
-                st.sidebar.warning("Failed to parse topics from syllabus.")
+                    
+            except json.JSONDecodeError as e:
+                st.sidebar.warning(f"Failed to parse topics from syllabus. Error: {str(e)}")
                 st.session_state.extracted_topics = None
         else:
-            st.sidebar.warning("Could not extract topics from syllabus.")
+            st.sidebar.warning("Could not extract topics from syllabus. Please try uploading again.")
+            st.session_state.extracted_topics = None
 
 
 def generate_rag_response(prompt: str, file_name: str, selected_instructions: list):
@@ -203,12 +343,15 @@ user_message_count = sum(1 for role, _ in st.session_state.chat_history if role 
 
 st.sidebar.header("Try it:")
 
-# Display chat limit and progress
-st.sidebar.markdown(
-    "**Chat Limit:** This prototype is limited to 3 questions per session."
-)
-st.sidebar.progress(user_message_count / 3, text=f"{user_message_count}/3 Questions Asked")
-
+# Display chat limit and progress (only if not in unlimited mode)
+if not st.session_state.limit_unlocked:
+    st.sidebar.markdown(
+        "**Chat Limit:** This prototype is limited to 3 questions per session."
+    )
+    st.sidebar.progress(user_message_count / 3, text=f"{user_message_count}/3 Questions Asked")
+else:
+    st.sidebar.success("🔓 **Unlimited Mode Active**")
+    st.sidebar.markdown(f"Questions Asked: {user_message_count}")
 st.sidebar.markdown(
     "**Get Started:** Upload your PDF/DOCX/TXT math syllabus below."
 )
@@ -292,30 +435,40 @@ if st.sidebar.button("🗑️ Clear Indexed Syllabus & Chat"):
 for role, text in st.session_state.chat_history:
     st.chat_message(role).markdown(text)
 
-if user_message_count >= 3:
+# Check if limit is reached (only if not in unlimited mode)
+limit_reached = user_message_count >= 3 and not st.session_state.limit_unlocked
+
+if limit_reached:
     st.chat_input("You have reached the 3-message limit. Please clear the chat to start over.", disabled=True)
     if "limit_reached_message" not in st.session_state:
         st.warning("You have reached the 3-message limit for this prototype. Please use the 'Clear Indexed Syllabus & Chat' button in the sidebar to start a new conversation.")
         st.session_state.limit_reached_message = True
 else:
     if prompt := st.chat_input("Ask a question about your syllabus (e.g., 'Explain the concept of Eigenvalues')"):
-        # Add user message to chat history and display
-        st.session_state.chat_history.append(("user", prompt))
-        st.chat_message("user").markdown(prompt)
-
-        if not st.session_state.file_search_store_name:
+        # Handle the easter egg as a special case first
+        if prompt.strip().lower() == "himanshu" and not st.session_state.file_search_store_name:
+            st.session_state.limit_unlocked = True
+            st.session_state.chat_history.append(("user", prompt))
+            st.session_state.chat_history.append(("assistant", "🔓 **Unlimited mode activated!** You can now ask unlimited questions. Please upload your syllabus to get started."))
+            st.rerun()
+        # Then, handle the case where no file is uploaded for a regular prompt
+        elif not st.session_state.file_search_store_name:
+            st.chat_message("user").markdown(prompt)
             st.chat_message("assistant").error("Please upload and index your syllabus first.")
+        # Finally, handle a regular prompt when a file is present
         else:
+            # Add user message to chat history and display
+            st.session_state.chat_history.append(("user", prompt))
+            st.chat_message("user").markdown(prompt)
+
             # Generate the response
             with st.chat_message("assistant"):
                 with st.spinner("Thinking... Retrieving context from syllabus..."):
                     file_name = st.session_state.file_search_store_name
-                    # Pass the full instruction text to the function
                     instruction_texts = [instruction_options[key] for key in selected_instructions]
                     response = generate_rag_response(prompt, file_name, instruction_texts)
 
                     if response and not response.startswith("ERROR:"):
-                        # Display the response text
                         st.markdown(response)
                         st.session_state.chat_history.append(("assistant", response))
                     else:

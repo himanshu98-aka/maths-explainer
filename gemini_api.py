@@ -24,16 +24,20 @@ def get_api_keys():
     try:
         if "GEMINI_API_KEY_1" in st.secrets: keys.add(st.secrets["GEMINI_API_KEY_1"])
         if "GEMINI_API_KEY_2" in st.secrets: keys.add(st.secrets["GEMINI_API_KEY_2"])
+        if "GEMINI_API_KEY_3" in st.secrets: keys.add(st.secrets["GEMINI_API_KEY_3"])
+        if "GEMINI_API_KEY_4" in st.secrets: keys.add(st.secrets["GEMINI_API_KEY_4"])
     except st.errors.StreamlitAPIException:
         # This is expected when running locally without a secrets.toml file.
         pass
     # Check environment variables (which .env populates)
     if os.getenv("GEMINI_API_KEY_1"): keys.add(os.getenv("GEMINI_API_KEY_1"))
     if os.getenv("GEMINI_API_KEY_2"): keys.add(os.getenv("GEMINI_API_KEY_2"))
+    if os.getenv("GEMINI_API_KEY_3"): keys.add(os.getenv("GEMINI_API_KEY_3"))
+    if os.getenv("GEMINI_API_KEY_4"): keys.add(os.getenv("GEMINI_API_KEY_4"))
     
     return [k for k in keys if k]
 
-def generate_with_failover(prompt: str, model_name: str = "gemini-2.0-flash-lite", file_name: str | None = None, system_instruction: str | None = None) -> str:
+def generate_with_failover(prompt: str, model_name: str = "gemini-2.5-flash-lite", file_name: str | None = None, system_instruction: str | None = None) -> str:
     """
     Generate content using a pool of API keys, with automatic failover.
     Optionally accepts a file_name for RAG.
