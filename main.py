@@ -310,8 +310,7 @@ def generate_rag_response(prompt: str, file_name: str, selected_instructions: li
         "The response MUST include the following sections, where applicable to the topic: "
         "1. **Explanation:** A detailed, conceptual overview. "
         "2. **Formulas/Calculations:** The core mathematical equations and an example where possible. **Use LaTeX syntax for all math equations (inline: $...$, display: $$...$$).** "
-        "3. **Applications (Data Science Focus):** How this concept is used in programming or data science. "
-        "4. **Merits and Demerits/Caveats:** The advantages and limitations of the concept. "
+        "3. **Merits and Demerits/Caveats:** The advantages and limitations of the concept. "
         "If the context does not contain the answer, state that you cannot find the information in the syllabus."
     )
     
